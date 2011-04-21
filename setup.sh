@@ -3,6 +3,7 @@
 # Installs Mysql, Ruby Enterprise edition (RVM), and Nginx.
 #
 # <UDF name="mysql_password" Label="MySQL Root Password" default="change-me-please" example="fooBAR34Z" />
+# <UDF name="base_repo" Label="Base Github Repo (for config/scripts/etc)" default="https://github.com/orangesparkleball/linode-ruby" example="https://github.com/orangesparkleball/linode-ruby" />
 
 
 if [ ! -n "$MYSQL_PASSWORD" ]; then
@@ -11,26 +12,29 @@ fi
 if [ ! -n "$MYSQL_PERCENT" ]; then
   MYSQL_PERCENT=40
 fi
+if [ ! -n "$BASE_REPO" ]; then
+  BASE_REPO='https://github.com/orangesparkleball/linode-ruby'
+fi
 
 ##################
 # New sources.list
 ##################
 cat > /etc/apt/sources.list << EOF
 ## main & restricted repositories
-deb http://us.archive.ubuntu.com/ubuntu/ karmic main restricted
-deb-src http://us.archive.ubuntu.com/ubuntu/ karmic main restricted
+deb http://us.archive.ubuntu.com/ubuntu/ lucid main restricted
+deb-src http://us.archive.ubuntu.com/ubuntu/ lucid main restricted
 
-deb http://security.ubuntu.com/ubuntu karmic-security main restricted
-deb-src http://security.ubuntu.com/ubuntu karmic-security main restricted
+deb http://security.ubuntu.com/ubuntu lucid-security main restricted
+deb-src http://security.ubuntu.com/ubuntu lucid-security main restricted
 
 ## universe repositories
-deb http://us.archive.ubuntu.com/ubuntu/ karmic universe
-deb-src http://us.archive.ubuntu.com/ubuntu/ karmic universe
-deb http://us.archive.ubuntu.com/ubuntu/ karmic-updates universe
-deb-src http://us.archive.ubuntu.com/ubuntu/ karmic-updates universe
+deb http://us.archive.ubuntu.com/ubuntu/ lucid universe
+deb-src http://us.archive.ubuntu.com/ubuntu/ lucid universe
+deb http://us.archive.ubuntu.com/ubuntu/ lucid-updates universe
+deb-src http://us.archive.ubuntu.com/ubuntu/ lucid-updates universe
 
-deb http://security.ubuntu.com/ubuntu karmic-security universe
-deb-src http://security.ubuntu.com/ubuntu karmic-security universe
+deb http://security.ubuntu.com/ubuntu lucid-security universe
+deb-src http://security.ubuntu.com/ubuntu lucid-security universe
 EOF
 
 
@@ -50,6 +54,8 @@ apt-get -y install build-essential \
 libxml2-dev \
 libxslt-dev \
 libcurl4-openssl-dev \
+libssl-dev \
+libgeoip-dev \
 libreadline-dev \
 libncurses5-dev \
 libpcre3-dev \
@@ -57,6 +63,13 @@ libmysqlclient-dev \
 libsqlite3-dev \
 bison \
 git-core
+
+
+################
+# Clone Base Repo
+################
+
+git clone $BASE_REPO.git $HOME/linode-config
 
 #################
 # Install rvm
@@ -99,20 +112,20 @@ gem install bundler --no-ri --no-rdoc
 #################
 # Install Nginx
 #################
-NGINX_URL="http://sysoev.ru/nginx/nginx-0.8.54.tar.gz"
-NGINX_TGZ="nginx-0.8.54.tar.gz"
-NGINX_DIR="nginx-0.8.54"
+NGINX_URL="http://sysoev.ru/nginx/nginx-1.0.0.tar.gz"
+NGINX_TGZ="nginx-1.0.0.tar.gz"
+NGINX_DIR="nginx-1.0.0"
 
 wget $NGINX_URL
 tar zvxf $NGINX_TGZ
 cd $NGINX_DIR
 
-./configure --prefix=/opt/nginx
+./configure --prefix=/opt/nginx --with-http_ssl_module --with-http_geoip_module
 make
 make install
 
-curl -L http://bit.ly/f7QYpy > /opt/nginx/conf/nginx.conf 
-curl -L http://bit.ly/hR889Q > /opt/nginx/sbin/nginx.reload.sh
+cat $HOME/linode-config/nginx.conf > /opt/nginx/conf/nginx.conf 
+cat $HOME/linode-config/nginx.reload.sh > /opt/nginx/sbin/nginx.reload.sh
 chmod +x /opt/nginx/sbin/nginx.reload.sh
 
 /opt/nginx/sbin/nginx
