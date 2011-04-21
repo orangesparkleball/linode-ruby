@@ -1,0 +1,21 @@
+Our goal is to create a collection of open source scripts to closely replicate
+the ease of Heroku deployment, while giving users the power to install on their
+own server. 
+
+
+Planned initial features:
+* Basic stackscript for Linode installation of basic tools (stack to be nginx/unicorn)
+* RVM for gemsets
+* Collection of scripts to allow easy bundle installs and whatnot
+* Gitorious
+
+References
+----------
+
+http://brandontilley.com/2011/01/29/serving-rails-apps-with-rvm-nginx-unicorn-and-upstart.html
+
+https://github.com/blog/517-unicorn
+
+http://www.atomos13.com/article/ruby-stack-script-w-rvm-for-ubuntu
+
+https://github.com/flogic/whiskey_disk
